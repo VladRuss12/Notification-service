@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     List<Notification> findAll();
+    List<Notification> findByCreatedBy(String createdBy);
 }
 
