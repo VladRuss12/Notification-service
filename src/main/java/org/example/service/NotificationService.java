@@ -1,6 +1,5 @@
 package org.example.service;
 
-import lombok.RequiredArgsConstructor;
 import org.example.model.Notification;
 import org.example.repository.NotificationRepository;
 import org.springframework.stereotype.Service;
@@ -10,10 +9,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class NotificationService {
 
     private final NotificationRepository repository;
+
+    public NotificationService(NotificationRepository repository) {
+        this.repository = repository;
+    }
 
     public Notification create(Notification notification) {
         notification.setCreatedAt(LocalDateTime.now());

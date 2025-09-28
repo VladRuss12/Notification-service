@@ -1,6 +1,5 @@
 package org.example.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.example.model.Notification;
 import org.example.service.NotificationService;
 import org.springframework.http.ResponseEntity;
@@ -10,10 +9,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/notifications")
-@RequiredArgsConstructor
 public class NotificationController {
 
     private final NotificationService service;
+
+    public NotificationController(NotificationService service) {
+        this.service = service;
+    }
 
     @PostMapping
     public ResponseEntity<Notification> create(@RequestBody Notification notification) {
@@ -57,4 +59,3 @@ public class NotificationController {
         }
     }
 }
-
