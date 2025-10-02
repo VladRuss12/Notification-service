@@ -35,17 +35,17 @@ public class NotificationScheduler {
             }
 
             if (!n.isSent5Days() && today.equals(eventDate.minusDays(5))) {
-                logger.info("🔔 [5 days before] " + n.getTitle());
+                logger.info("🐽 [5 days before] " + n.getTitle());
                 n.setSent5Days(true);
             }
 
             if (!n.isSent1Day() && today.equals(eventDate.minusDays(1))) {
-                logger.info("🔔 [1 day before] " + n.getTitle());
+                logger.info("🐽 [1 day before] " + n.getTitle());
                 n.setSent1Day(true);
             }
 
             if (!n.isSentOnDay() && today.equals(eventDate)) {
-                logger.info("🎉 [Event Day] " + n.getTitle());
+                logger.info("🐽 [Event Day] " + n.getTitle());
                 n.setSentOnDay(true);
             }
 
