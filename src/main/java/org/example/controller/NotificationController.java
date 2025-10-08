@@ -1,6 +1,8 @@
 package org.example.controller;
 
-import org.example.model.Notification;
+import org.example.dto.CreateNotificationRequest;
+import org.example.dto.NotificationResponse;
+import org.example.dto.UpdateNotificationRequest;
 import org.example.service.NotificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,32 +20,32 @@ public class NotificationController {
     }
 
     @PostMapping
-    public ResponseEntity<Notification> create(@RequestBody Notification notification) {
-        return ResponseEntity.ok(service.create(notification));
+    public ResponseEntity<NotificationResponse> create(@RequestBody CreateNotificationRequest request) {
+        return ResponseEntity.ok(service.create(request));
     }
 
     @GetMapping
-    public List<Notification> getAll() {
+    public List<NotificationResponse> getAll() {
         return service.getAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Notification> getById(@PathVariable Long id) {
+    public ResponseEntity<NotificationResponse> getById(@PathVariable Long id) {
         return service.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/createdBy/{creator}")
-    public List<Notification> getByCreator(@PathVariable String creator) {
+    public List<NotificationResponse> getByCreator(@PathVariable String creator) {
         return service.getByCreator(creator);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Notification> update(@PathVariable Long id,
-                                               @RequestBody Notification updatedNotification) {
+    public ResponseEntity<NotificationResponse> update(@PathVariable Long id,
+                                                       @RequestBody UpdateNotificationRequest request) {
         try {
-            return ResponseEntity.ok(service.update(id, updatedNotification));
+            return ResponseEntity.ok(service.update(id, request));
         } catch (RuntimeException ex) {
             return ResponseEntity.notFound().build();
         }

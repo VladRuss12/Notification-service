@@ -1,7 +1,7 @@
 package org.example.scheduler;
 
 import org.example.model.Notification;
-import org.example.model.NotificationType;
+import org.example.model.NotificationEnum;
 import org.example.repository.NotificationRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -30,7 +30,7 @@ public class NotificationScheduler {
         for (Notification n : all) {
             LocalDate eventDate = n.getEventDate();
 
-            if (n.getType() == NotificationType.BIRTHDAY) {
+            if (n.getType() == NotificationEnum.BIRTHDAY) {
                 eventDate = LocalDate.of(today.getYear(), eventDate.getMonth(), eventDate.getDayOfMonth());
             }
 

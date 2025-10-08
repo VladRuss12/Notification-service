@@ -1,36 +1,22 @@
-package org.example.model;
+package org.example.dto;
 
-import jakarta.persistence.*;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.example.model.NotificationEnum;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Entity
 @Data
-@NoArgsConstructor
-public class Notification {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class NotificationResponse {
     private Long id;
-
     private String createdBy;
-
-    @Enumerated(EnumType.STRING)
     private NotificationEnum type;
-
     private String title;
     private String description;
-
     private LocalDate eventDate;
-
     private boolean sent5Days;
     private boolean sent1Day;
     private boolean sentOnDay;
-
     private LocalDateTime createdAt;
-
     private boolean archived;
 }
