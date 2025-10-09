@@ -1,5 +1,6 @@
 package org.example.service;
 
+import lombok.RequiredArgsConstructor;
 import org.example.dto.CreateNotificationRequest;
 import org.example.dto.NotificationResponse;
 import org.example.dto.UpdateNotificationRequest;
@@ -13,15 +14,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+
 @Service
+@RequiredArgsConstructor
 public class NotificationService {
 
     private final NotificationRepository repository;
-
-    public NotificationService(NotificationRepository repository) {
-        this.repository = repository;
-    }
-
     public NotificationResponse create(CreateNotificationRequest request) {
         Notification notification = NotificationMapper.fromCreateDto(request);
         notification.setCreatedAt(LocalDateTime.now());
@@ -61,4 +59,41 @@ public class NotificationService {
         }
         repository.deleteById(id);
     }
+    public List<NotificationResponse> getByArchived(boolean archived) {
+        return repository.findByArchived(archived)
+                .stream()
+                .map(NotificationMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<NotificationResponse> getByCreatorAndArchived(String creator, boolean archived) {
+        return repository.findByCreatedByAndArchived(creator, archived)
+                .stream()
+                .map(NotificationMapper::toDto)
+                .collect(Collectors.toList());
+    }
+    public NotificationResponse archiveById(Long id) {
+        return repository.findById(id)
+                .map(notification -> {
+                    notification.setArchived(true);
+                    return NotificationMapper.toDto(repository.save(notification));
+                })
+                .orElseThrow(() -> new RuntimeException("Notification not found with id " + id));
+    }
+
+    public NotificationResponse unarchiveById(Long id) {
+        return repository.findById(id)
+                .map(notification -> {
+                    notification.setArchived(false);
+                    return NotificationMapper.toDto(repository.save(notification));
+                })
+                .orElseThrow(() -> new RuntimeException("Notification not found with id " + id));
+    }
+
+    public void deleteArchived() {
+        List<Notification> archived = repository.findByArchived(true);
+        repository.deleteAll(archived);
+    }
+
+
 }
