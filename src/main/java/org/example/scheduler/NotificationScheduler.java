@@ -2,7 +2,7 @@ package org.example.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import org.example.model.Notification;
-import org.example.model.NotificationEnum;
+import org.example.model.ENotificationType;
 import org.example.repository.NotificationRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -27,7 +27,7 @@ public class NotificationScheduler {
         for (Notification n : all) {
             LocalDate eventDate = n.getEventDate();
 
-            if (n.getType() == NotificationEnum.BIRTHDAY) {
+            if (n.getType() == ENotificationType.BIRTHDAY) {
                 eventDate = LocalDate.of(today.getYear(), eventDate.getMonth(), eventDate.getDayOfMonth());
             }
 

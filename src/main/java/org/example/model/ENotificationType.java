@@ -1,7 +1,6 @@
 package org.example.model;
 
-public enum NotificationEnum {
+public enum ENotificationType {
     BIRTHDAY,
     REMINDER
 }
-

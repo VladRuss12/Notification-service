@@ -1,7 +1,7 @@
 package org.example.dto;
 
 import lombok.Data;
-import org.example.model.NotificationEnum;
+import org.example.model.ENotificationType;
 
 import java.time.LocalDate;
 
@@ -9,7 +9,7 @@ import java.time.LocalDate;
 public class UpdateNotificationRequest {
     private String title;
     private String description;
-    private NotificationEnum type;
+    private ENotificationType type;
     private LocalDate eventDate;
     private boolean archived;
 }
