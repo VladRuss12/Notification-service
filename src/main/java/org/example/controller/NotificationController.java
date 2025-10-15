@@ -29,9 +29,12 @@ public class NotificationController {
 
     @GetMapping("/{id}")
     public ResponseEntity<NotificationResponse> getById(@PathVariable Long id) {
-        return service.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(service.getById(id));
+    }
+
+    @GetMapping("/{id}/with-logs")
+    public ResponseEntity<NotificationResponse> getWithLogs(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getWithLogsById(id));
     }
 
     @GetMapping("/createdBy/{creator}")
@@ -39,52 +42,39 @@ public class NotificationController {
         return service.getByCreator(creator);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<NotificationResponse> update(@PathVariable Long id,
-                                                       @RequestBody UpdateNotificationRequest request) {
-        try {
-            return ResponseEntity.ok(service.update(id, request));
-        } catch (RuntimeException ex) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        try {
-            service.delete(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException ex) {
-            return ResponseEntity.notFound().build();
-        }
-    }
     @GetMapping("/archived")
     public List<NotificationResponse> getArchived(@RequestParam(defaultValue = "true") boolean archived) {
         return service.getByArchived(archived);
     }
 
     @GetMapping("/createdBy/{creator}/archived")
-    public List<NotificationResponse> getByCreatorAndArchived(@PathVariable String creator,
-                                                              @RequestParam(defaultValue = "false") boolean archived) {
+    public List<NotificationResponse> getByCreatorAndArchived(
+            @PathVariable String creator,
+            @RequestParam(defaultValue = "false") boolean archived) {
         return service.getByCreatorAndArchived(creator, archived);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<NotificationResponse> update(
+            @PathVariable Long id,
+            @RequestBody UpdateNotificationRequest request) {
+        return ResponseEntity.ok(service.update(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/archive")
     public ResponseEntity<NotificationResponse> archive(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(service.archiveById(id));
-        } catch (RuntimeException ex) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(service.archiveById(id));
     }
 
     @PatchMapping("/{id}/unarchive")
     public ResponseEntity<NotificationResponse> unarchive(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(service.unarchiveById(id));
-        } catch (RuntimeException ex) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(service.unarchiveById(id));
     }
 
     @DeleteMapping("/archived")
@@ -92,12 +82,4 @@ public class NotificationController {
         service.deleteArchived();
         return ResponseEntity.noContent().build();
     }
-
-    @GetMapping("/{id}/with-logs")
-    public ResponseEntity<NotificationResponse> getWithLogs(@PathVariable Long id) {
-        return service.getWithLogsById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
 }

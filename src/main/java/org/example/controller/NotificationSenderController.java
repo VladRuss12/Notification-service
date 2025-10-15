@@ -16,6 +16,6 @@ public class NotificationSenderController {
     public String sendNotification(@RequestBody Notification notification,
                                    @RequestParam(defaultValue = "manual") String stage) {
         senderService.send(notification, stage);
-        return "✅ Notification sent manually";
+        return "Notification sent manually";
     }
 }

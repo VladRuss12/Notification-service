@@ -6,6 +6,7 @@ import org.example.model.Notification;
 import org.example.model.NotificationSendLog;
 import org.example.repository.NotificationRepository;
 import org.example.repository.NotificationSendLogRepository;
+import org.example.throwable.NotificationSendException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +53,8 @@ public class HttpNotificationSenderService implements NotificationSender {
             logRepository.save(logEntity);
 
         } catch (Exception e) {
-            log.error("Ошибка при отправке уведомления: {}", e.getMessage(), e);
+            log.error("Ошибка при отправке уведомления {}: {}", notification.getTitle(), e.getMessage(), e);
+            throw new NotificationSendException("Failed to send notification: " + notification.getTitle(), e);
         }
     }
 
@@ -67,7 +69,11 @@ public class HttpNotificationSenderService implements NotificationSender {
 
         log.info("Автоматическая отправка {} уведомлений...", notifications.size());
         for (Notification n : notifications) {
-            send(n, "daily");
+            try {
+                send(n, "daily");
+            } catch (NotificationSendException e) {
+                log.error("Не удалось отправить уведомление {}: {}", n.getId(), e.getMessage());
+            }
         }
     }
 }
