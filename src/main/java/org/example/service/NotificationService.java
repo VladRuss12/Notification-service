@@ -6,9 +6,9 @@ import org.example.dto.NotificationResponse;
 import org.example.dto.UpdateNotificationRequest;
 import org.example.mapper.NotificationMapper;
 import org.example.model.Notification;
+import org.example.model.NotificationSendLog;
 import org.example.repository.NotificationRepository;
 import org.example.repository.NotificationSendLogRepository;
-import org.example.service.sender.NotificationSender;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 public class NotificationService {
 
     private final NotificationRepository repository;
+    private final NotificationSendLogRepository logRepository;
 
 
     public NotificationResponse create(CreateNotificationRequest request) {
@@ -98,6 +99,12 @@ public class NotificationService {
         List<Notification> archived = repository.findByArchived(true);
         repository.deleteAll(archived);
     }
-
+    public Optional<NotificationResponse> getWithLogsById(Long id) {
+        return repository.findById(id)
+                .map(notification -> {
+                    List<NotificationSendLog> logs = logRepository.findAllByNotificationId(notification.getId());
+                    return NotificationMapper.toDto(notification, logs);
+                });
+    }
 
 }

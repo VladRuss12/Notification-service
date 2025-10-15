@@ -93,4 +93,11 @@ public class NotificationController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/{id}/with-logs")
+    public ResponseEntity<NotificationResponse> getWithLogs(@PathVariable Long id) {
+        return service.getWithLogsById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 }

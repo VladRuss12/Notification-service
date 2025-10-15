@@ -41,9 +41,8 @@ public class HttpNotificationSenderService implements NotificationSender {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            log.info("✅ Notification sent: {}, response: {}", notification.getTitle(), response.body());
+            log.info("Notification sent: {}, response: {}", notification.getTitle(), response.body());
 
-            // 💾 Сохраняем запись об отправке
             NotificationSendLog logEntity = NotificationSendLog.builder()
                     .notification(notification)
                     .stage(stage)
@@ -53,7 +52,7 @@ public class HttpNotificationSenderService implements NotificationSender {
             logRepository.save(logEntity);
 
         } catch (Exception e) {
-            log.error("❌ Ошибка при отправке уведомления: {}", e.getMessage(), e);
+            log.error("Ошибка при отправке уведомления: {}", e.getMessage(), e);
         }
     }
 
@@ -62,11 +61,11 @@ public class HttpNotificationSenderService implements NotificationSender {
         List<Notification> notifications = notificationRepository.findByArchived(false);
 
         if (notifications.isEmpty()) {
-            log.info("📭 Нет активных уведомлений для рассылки.");
+            log.info("Нет активных уведомлений для рассылки.");
             return;
         }
 
-        log.info("📅 Автоматическая отправка {} уведомлений...", notifications.size());
+        log.info("Автоматическая отправка {} уведомлений...", notifications.size());
         for (Notification n : notifications) {
             send(n, "daily");
         }
