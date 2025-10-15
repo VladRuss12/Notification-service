@@ -31,9 +31,6 @@ public class Notification {
 
     private LocalDate eventDate;
 
-    private boolean sent5Days;
-    private boolean sent1Day;
-    private boolean sentOnDay;
 
     private LocalDateTime createdAt;
 

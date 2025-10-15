@@ -7,6 +7,8 @@ import org.example.dto.UpdateNotificationRequest;
 import org.example.mapper.NotificationMapper;
 import org.example.model.Notification;
 import org.example.repository.NotificationRepository;
+import org.example.repository.NotificationSendLogRepository;
+import org.example.service.sender.NotificationSender;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 public class NotificationService {
 
     private final NotificationRepository repository;
+
+
     public NotificationResponse create(CreateNotificationRequest request) {
         Notification notification = NotificationMapper.fromCreateDto(request);
         notification.setCreatedAt(LocalDateTime.now());

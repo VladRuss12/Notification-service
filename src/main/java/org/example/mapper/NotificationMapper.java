@@ -13,9 +13,6 @@ public class NotificationMapper {
         dto.setTitle(entity.getTitle());
         dto.setDescription(entity.getDescription());
         dto.setEventDate(entity.getEventDate());
-        dto.setSent5Days(entity.isSent5Days());
-        dto.setSent1Day(entity.isSent1Day());
-        dto.setSentOnDay(entity.isSentOnDay());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setArchived(entity.isArchived());
         return dto;
