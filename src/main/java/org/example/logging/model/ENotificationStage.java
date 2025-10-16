@@ -1,4 +1,4 @@
-package org.example.model;
+package org.example.logging.model;
 
 public enum ENotificationStage {
     FIVE_DAYS,

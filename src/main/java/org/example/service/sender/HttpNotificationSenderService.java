@@ -3,9 +3,8 @@ package org.example.service.sender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.Notification;
-import org.example.model.NotificationSendLog;
-import org.example.repository.NotificationRepository;
-import org.example.repository.NotificationSendLogRepository;
+import org.example.logging.service.NotificationLogService;
+import org.example.service.NotificationService;
 import org.example.throwable.NotificationSendException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -16,7 +15,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -24,8 +22,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HttpNotificationSenderService implements NotificationSender {
 
-    private final NotificationRepository notificationRepository;
-    private final NotificationSendLogRepository logRepository;
+    private final NotificationLogService logService;
+    private final NotificationService notificationService;
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @Override
@@ -44,23 +42,18 @@ public class HttpNotificationSenderService implements NotificationSender {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             log.info("Notification sent: {}, response: {}", notification.getTitle(), response.body());
 
-            NotificationSendLog logEntity = NotificationSendLog.builder()
-                    .notification(notification)
-                    .stage(stage)
-                    .sentAt(LocalDateTime.now())
-                    .build();
-
-            logRepository.save(logEntity);
+            // Логирование через NotificationLogService
+            logService.createLog(notification, stage);
 
         } catch (Exception e) {
             log.error("Ошибка при отправке уведомления {}: {}", notification.getTitle(), e.getMessage(), e);
             throw new NotificationSendException("Failed to send notification: " + notification.getTitle(), e);
         }
     }
-
+g
     @Scheduled(cron = "0 0 8 * * *")
     public void sendDailyNotifications() {
-        List<Notification> notifications = notificationRepository.findByArchived(false);
+        List<Notification> notifications = notificationService.getActiveNotifications();
 
         if (notifications.isEmpty()) {
             log.info("Нет активных уведомлений для рассылки.");

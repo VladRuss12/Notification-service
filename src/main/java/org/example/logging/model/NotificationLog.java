@@ -1,7 +1,8 @@
-package org.example.model;
+package org.example.logging.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.Notification;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 @Table(name = "notification_send_log")
-public class NotificationSendLog {
+public class NotificationLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,5 +26,5 @@ public class NotificationSendLog {
     private LocalDateTime sentAt;
 
     @Enumerated(EnumType.STRING)
-    private ENotificationStage  stage; // "5_days", "1_day", "on_day"
+    private ENotificationStage stage; // "5_days", "1_day", "on_day"
 }

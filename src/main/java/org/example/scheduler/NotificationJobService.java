@@ -4,17 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.ENotificationType;
 import org.example.model.Notification;
-import org.example.model.NotificationSendLog;
-import org.example.repository.NotificationRepository;
-import org.example.repository.NotificationSendLogRepository;
-import org.example.service.sender.NotificationSender;
+import org.example.service.NotificationService;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -23,31 +17,26 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NotificationJobService {
 
-    private final NotificationRepository repository;
-    private final NotificationSendLogRepository logRepository;
-    private final NotificationSender sender;
-
-    private final ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
-
-    {
-        taskScheduler.setPoolSize(5);
-        taskScheduler.initialize();
-    }
+    private final NotificationService notificationService;
 
     @Scheduled(cron = "0 0 8 * * *")
     public void planTodayJobs() {
         LocalDate today = LocalDate.now();
-        List<Notification> notifications = repository.findByArchived(false);
+        List<Notification> notifications = notificationService.getActiveNotifications();
 
         for (Notification n : notifications) {
             long daysUntil = calculateDaysUntil(n, today);
 
-            if (daysUntil == 5 && !wasSent(n, "5_days")) {
-                scheduleNotification(n, 60_000L, "5_days"); // 1 минута
-            } else if (daysUntil == 1 && !wasSent(n, "1_day")) {
-                scheduleNotification(n, 60_000L, "1_day");
-            } else if (daysUntil == 0 && !wasSent(n, "on_day")) {
-                scheduleNotification(n, 60_000L, "on_day");
+            try {
+                if (daysUntil == 5) {
+                    notificationService.sendNotificationIfNotSent(n, "5_days");
+                } else if (daysUntil == 1) {
+                    notificationService.sendNotificationIfNotSent(n, "1_day");
+                } else if (daysUntil == 0) {
+                    notificationService.sendNotificationIfNotSent(n, "on_day");
+                }
+            } catch (Exception e) {
+                log.info("Notification {} already sent for stage {}", n.getId(), daysUntil);
             }
         }
     }
@@ -61,34 +50,6 @@ public class NotificationJobService {
             return ChronoUnit.DAYS.between(today, birthdayThisYear);
         } else {
             return ChronoUnit.DAYS.between(today, n.getEventDate());
-        }
-    }
-
-
-    private boolean wasSent(Notification n, String stage) {
-        return logRepository.findByNotificationIdAndStage(n.getId(), stage).isPresent();
-    }
-
-
-    private void scheduleNotification(Notification n, long delayMillis, String stage) {
-        Instant runAt = Instant.now().plusMillis(delayMillis);
-        taskScheduler.schedule(() -> sendAndLog(n, stage), runAt);
-    }
-
-    private void sendAndLog(Notification n, String stage) {
-        try {
-            sender.send(n, stage);
-
-            NotificationSendLog sendLog = NotificationSendLog.builder()
-                    .notification(n)
-                    .stage(stage)
-                    .sentAt(LocalDateTime.now())
-                    .build();
-            logRepository.save(sendLog);
-
-            log.info("Notification {} [{}] sent and logged", n.getId(), stage);
-        } catch (Exception e) {
-            log.error("Failed to send notification {} [{}]: {}", n.getId(), stage, e.getMessage(), e);
         }
     }
 }

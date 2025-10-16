@@ -11,9 +11,10 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotificationSendLogResponse {
-    private Long id;
+public class ManualSendResponse {
+
     private Long notificationId;
-    private LocalDateTime sentAt;
     private String stage;
+    private LocalDateTime sentAt;
+    private String status;
 }

@@ -3,12 +3,12 @@ package org.example.service;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.CreateNotificationRequest;
 import org.example.dto.NotificationResponse;
+import org.example.logging.dto.NotificationLogResponse;
 import org.example.dto.UpdateNotificationRequest;
-import org.example.mapper.NotificationMapper;
 import org.example.model.Notification;
-import org.example.model.NotificationSendLog;
 import org.example.repository.NotificationRepository;
-import org.example.repository.NotificationSendLogRepository;
+import org.example.logging.service.NotificationLogService;
+import org.example.service.sender.HttpNotificationSenderService;
 import org.example.throwable.BadRequestException;
 import org.example.throwable.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -21,46 +21,54 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class NotificationService {
 
+    private final HttpNotificationSenderService sender;
     private final NotificationRepository repository;
-    private final NotificationSendLogRepository logRepository;
+    private final NotificationLogService logService;
 
+    // --- CRUD ---
     public NotificationResponse create(CreateNotificationRequest request) {
         if (request.getEventDate() == null) {
             throw new BadRequestException("Event date must not be null");
         }
-        Notification notification = NotificationMapper.fromCreateDto(request);
+        Notification notification = org.example.mapper.NotificationMapper.fromCreateDto(request);
         notification.setCreatedAt(LocalDateTime.now());
-        return NotificationMapper.toDto(repository.save(notification));
+        return org.example.mapper.NotificationMapper.toDto(repository.save(notification));
     }
 
     public List<NotificationResponse> getAll() {
         return repository.findAll()
                 .stream()
-                .map(NotificationMapper::toDto)
+                .map(org.example.mapper.NotificationMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     public List<NotificationResponse> getByCreator(String creator) {
         return repository.findByCreatedBy(creator)
                 .stream()
-                .map(NotificationMapper::toDto)
+                .map(org.example.mapper.NotificationMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     public NotificationResponse getById(Long id) {
         return repository.findById(id)
-                .map(NotificationMapper::toDto)
+                .map(org.example.mapper.NotificationMapper::toDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Notification", id));
     }
 
     public NotificationResponse getWithLogsById(Long id) {
         return repository.findById(id)
                 .map(notification -> {
-                    List<NotificationSendLog> logs = logRepository.findAllByNotificationId(notification.getId());
-                    return NotificationMapper.toDto(notification, logs);
+                    List<NotificationLogResponse> logs = logService.getLogsByNotification(notification);
+                    return org.example.mapper.NotificationMapper.toDto(notification, logs);
                 })
                 .orElseThrow(() -> new ResourceNotFoundException("Notification", id));
     }
+
+
+    public List<Notification> getActiveNotifications() {
+        return repository.findByArchived(false);
+    }
+
 
     public NotificationResponse update(Long id, UpdateNotificationRequest request) {
         if (request.getEventDate() == null) {
@@ -68,8 +76,8 @@ public class NotificationService {
         }
         return repository.findById(id)
                 .map(existing -> {
-                    NotificationMapper.updateEntity(existing, request);
-                    return NotificationMapper.toDto(repository.save(existing));
+                    org.example.mapper.NotificationMapper.updateEntity(existing, request);
+                    return org.example.mapper.NotificationMapper.toDto(repository.save(existing));
                 })
                 .orElseThrow(() -> new ResourceNotFoundException("Notification", id));
     }
@@ -83,14 +91,14 @@ public class NotificationService {
     public List<NotificationResponse> getByArchived(boolean archived) {
         return repository.findByArchived(archived)
                 .stream()
-                .map(NotificationMapper::toDto)
+                .map(org.example.mapper.NotificationMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     public List<NotificationResponse> getByCreatorAndArchived(String creator, boolean archived) {
         return repository.findByCreatedByAndArchived(creator, archived)
                 .stream()
-                .map(NotificationMapper::toDto)
+                .map(org.example.mapper.NotificationMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -98,7 +106,7 @@ public class NotificationService {
         return repository.findById(id)
                 .map(notification -> {
                     notification.setArchived(true);
-                    return NotificationMapper.toDto(repository.save(notification));
+                    return org.example.mapper.NotificationMapper.toDto(repository.save(notification));
                 })
                 .orElseThrow(() -> new ResourceNotFoundException("Notification", id));
     }
@@ -107,7 +115,7 @@ public class NotificationService {
         return repository.findById(id)
                 .map(notification -> {
                     notification.setArchived(false);
-                    return NotificationMapper.toDto(repository.save(notification));
+                    return org.example.mapper.NotificationMapper.toDto(repository.save(notification));
                 })
                 .orElseThrow(() -> new ResourceNotFoundException("Notification", id));
     }
@@ -115,5 +123,16 @@ public class NotificationService {
     public void deleteArchived() {
         List<Notification> archived = repository.findByArchived(true);
         repository.deleteAll(archived);
+    }
+
+    // --- Отправка уведомлений с проверкой дублирования ---
+    public NotificationLogResponse sendNotificationIfNotSent(Notification notification, String stage) {
+        if (logService.isSent(notification, stage)) {
+            throw new BadRequestException("Notification already sent at stage: " + stage);
+        }
+
+        sender.send(notification, stage);
+
+        return logService.createLog(notification, stage);
     }
 }

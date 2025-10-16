@@ -1,8 +1,10 @@
 package org.example.mapper;
 
-import org.example.dto.*;
+import org.example.dto.CreateNotificationRequest;
+import org.example.dto.NotificationResponse;
+import org.example.dto.UpdateNotificationRequest;
+import org.example.logging.dto.NotificationLogResponse;
 import org.example.model.Notification;
-import org.example.model.NotificationSendLog;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,14 +23,15 @@ public class NotificationMapper {
         dto.setArchived(entity.isArchived());
         return dto;
     }
-    public static NotificationResponse toDto(Notification entity, List<NotificationSendLog> logs) {
+
+    public static NotificationResponse toDto(Notification entity, List<NotificationLogResponse> logs) {
         NotificationResponse dto = toDto(entity);
 
         dto.setSendLogs(
                 logs == null ? List.of() : logs.stream()
                         .map(log -> new NotificationResponse.SendLogInfo(
-                                NotificationSendLogMapper.toDto(log).getSentAt(),
-                                NotificationSendLogMapper.toDto(log).getStage()
+                                log.getSentAt(),
+                                log.getStage()
                         ))
                         .collect(Collectors.toList())
         );
