@@ -1,10 +1,12 @@
 package org.example.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.CreateNotificationRequest;
 import org.example.dto.NotificationResponse;
 import org.example.dto.UpdateNotificationRequest;
 import org.example.service.NotificationService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,8 +20,9 @@ public class NotificationController {
     private final NotificationService service;
 
     @PostMapping
-    public ResponseEntity<NotificationResponse> create(@RequestBody CreateNotificationRequest request) {
-        return ResponseEntity.ok(service.create(request));
+    @ResponseStatus(HttpStatus.CREATED)
+    public NotificationResponse create(@Valid @RequestBody CreateNotificationRequest request) {
+        return service.create(request);
     }
 
     @GetMapping
@@ -57,14 +60,14 @@ public class NotificationController {
     @PutMapping("/{id}")
     public ResponseEntity<NotificationResponse> update(
             @PathVariable Long id,
-            @RequestBody UpdateNotificationRequest request) {
+            @Valid @RequestBody UpdateNotificationRequest request) {
         return ResponseEntity.ok(service.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
         service.delete(id);
-        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/archive")
@@ -78,8 +81,8 @@ public class NotificationController {
     }
 
     @DeleteMapping("/archived")
-    public ResponseEntity<Void> deleteArchived() {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteArchived() {
         service.deleteArchived();
-        return ResponseEntity.noContent().build();
     }
 }
