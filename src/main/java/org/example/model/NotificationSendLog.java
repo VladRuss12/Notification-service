@@ -24,5 +24,6 @@ public class NotificationSendLog {
 
     private LocalDateTime sentAt;
 
-    private String stage; // "5_days", "1_day", "on_day"
+    @Enumerated(EnumType.STRING)
+    private ENotificationStage  stage; // "5_days", "1_day", "on_day"
 }
